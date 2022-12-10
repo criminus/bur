@@ -1,0 +1,35 @@
+{
+	"name": "anix/bur",
+	"type": "phpbb-extension",
+	"description": "Display a custom banned rank.",
+	"homepage": "https://www.phpbbhacks.ro",
+	"version": "1.0.0",
+	"time": "2021-02-03",
+	"keywords": ["phpbb", "extension", "Banned user rank"],
+	"license": "GPL-2.0",
+	"authors": [
+		{
+			"name": "Anix",
+			"homepage": "https://www.phpbbhacks.ro",
+			"email": "neculaianisor@gmail.com",
+			"role": "Extension Developer"
+		}
+	],
+	"require": {
+		"php": ">=5.3.3"
+	},
+	"require-dev": {
+		"phpbb/epv": "dev-master"
+	},
+	"extra": {
+		"display-name": "Banned user rank",
+		"soft-require": {
+			"phpbb/phpbb": ">=3.3.*@dev"
+		},
+		"version-check": {
+			"host": "www.phpbbhacks.ro",
+			"directory": "/versions",
+			"filename": "bur_version.json"
+		}
+	}
+}

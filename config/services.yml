@@ -1,0 +1,12 @@
+services:
+    anix.bur.listener:
+        class: anix\bur\event\listener
+        arguments:
+            - '@request'
+            - '@user'
+            - '@cache'
+            - '@dbal.conn'
+            - '@language'
+            - '%core.php_ext%'
+        tags:
+            - { name: event.listener }
