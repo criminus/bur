@@ -4,7 +4,6 @@ services:
         arguments:
             - '@request'
             - '@user'
-            - '@cache'
             - '@dbal.conn'
             - '@language'
             - '%core.php_ext%'
