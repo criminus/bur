@@ -10,7 +10,6 @@
 namespace anix\bur\event;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use phpbb\cache\service as cache_service;
 use phpbb\language\language;
 
 class listener implements EventSubscriberInterface
@@ -22,23 +21,20 @@ class listener implements EventSubscriberInterface
 	/** @var \phpbb\user */
 	protected $user;
 
-	/** @var cache */
-	protected $cache;
-
 	/** @var \phpbb\db\driver\driver_interface */
 	protected $db;
 	
-	/** @var string phpEx */
-	protected $php_ext;
-
 	/** @var language */
 	protected $language;
+	
+	/** @var string phpEx */
+	protected $php_ext;
+	
 	
 	public function __construct
 	(
 		\phpbb\request\request $request, 
 		\phpbb\user $user, 
-		cache_service $cache,
 		\phpbb\db\driver\driver_interface $db,
 		language $language,
 		$php_ext
@@ -46,7 +42,6 @@ class listener implements EventSubscriberInterface
 	{
 		$this->request = $request;
 		$this->user = $user;
-		$this->cache = $cache;
 		$this->db = $db;
 		$this->language = $language;
 		$this->php_ext = $php_ext;
@@ -57,13 +52,7 @@ class listener implements EventSubscriberInterface
 		return array(
 			'core.viewtopic_modify_post_row'		=> 'viewtopic_modify_post_row',
 			'core.memberlist_prepare_profile_data'	=> 'memberlist_prepare_profile_data',
-			'core.common'							=> 'load_language',
 		);
-	}
-
-	public function load_language($event)
-	{
-		$this->user->add_lang_ext('anix/bur', 'bur');
 	}
 
 	//Viewtopic page
@@ -71,6 +60,9 @@ class listener implements EventSubscriberInterface
 	{
 		$post_row = $event['post_row'];
 		$poster_id = $event['poster_id'];
+		
+		// add lang file
+		$this->language->add_lang('bur', 'anix/bur');
 
 		$banned_users = $this->get_banned_users($poster_id);
 
@@ -96,6 +88,9 @@ class listener implements EventSubscriberInterface
 	public function memberlist_prepare_profile_data($event) {
 		$template_data = $event['template_data'];
 		$userid = $event['data']['user_id'];
+		
+		// add lang file
+		$this->language->add_lang('bur', 'anix/bur');
 
 		$banned_users = $this->get_banned_users($userid);
 
@@ -119,28 +114,23 @@ class listener implements EventSubscriberInterface
 
 	//Grab the id of banned users
 	protected function get_banned_users($user) {
+
 		global $db;
 
-		if (($banned_users = $this->cache->get('_banned_users')) === false)
-		{
-			$sql = 'SELECT ban_userid, ban_end
-			FROM ' . BANLIST_TABLE . '
-			WHERE (ban_end > ' . time() . ' OR ban_end = 0)
-		   	AND ban_userid = ' . $user . '';
+		$sql = 'SELECT ban_userid, ban_end
+		FROM ' . BANLIST_TABLE . '
+		WHERE (ban_end > ' . time() . ' OR ban_end = 0)
+			AND ban_userid = ' . $user . '';
 		   
-	   		$result = $db->sql_query($sql);
+	   	$result = $db->sql_query($sql);
 
-	   		$banned_users = [];
+	   	$banned_users = [];
 
-	   		if ($row = $db->sql_fetchrow($result))
-	   		{
-		   		$banned_users[$row['ban_userid']] = $row['ban_end'];
-	  		}
-	   		$db->sql_freeresult($result);
-
-			// cache this data for 5 minutes, this improves performance
-			$this->cache->put('_banned_users', $banned_users, 300);
-		}
+	   	if ($row = $db->sql_fetchrow($result))
+	   	{
+		   	$banned_users[$row['ban_userid']] = $row['ban_end'];
+	  	}
+	   	$db->sql_freeresult($result);
 
 		return $banned_users;
 	}
